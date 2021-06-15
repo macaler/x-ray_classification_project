@@ -7,7 +7,7 @@ PYTHONHASHSEED=0 python x-ray_classification_challenge_MAC.py
 I recommend running from the IDLE environment.
 
 The data used in the project come from Codecademy; they, in turn, downloaded the image files from:
-https://www.kaggle.com/pranavraikokte/covid19-image-dataset
+https://www.kaggle.com/pranavraikokte/covid19-image-dataset <br>
 I have included the image files with this repository. I have not made any changes to the files themselves, nor have I changed any of the directory sub-structures.
 The dataset was released by user pranavraikokte under the CC BY-SA 4.0 license as found at https://creativecommons.org/licenses/by-sa/4.0/. I did not make any changes to the files found in the data set. However, I did use the data to build my deep learning model. I am not clear as to whether or not using the data to build a deep learning model counts as "build upon the material" (as detailed at https://creativecommons.org/licenses/by-sa/4.0/), but I suppose it is better to be safe than sorry, so I will be releasing my work under the same license. <br>
 Kaggle user pranavraikokte acknowledges the University of Montreal for releasing the x-ray images. 
