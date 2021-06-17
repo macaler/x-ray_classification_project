@@ -71,7 +71,7 @@ rescale_factor = 1.0/255.0
 the number of epochs to train over. I chose to gather these all into one convenient place to make
 it easier to change them during the optimization process.'''
 thebatchsize = 24
-thelearningrate = 0.007
+thelearningrate = 0.006
 numofepochs = 500
 
 ''' The following two lines of code were taken from
@@ -87,7 +87,7 @@ tf.random.set_seed(26)
 
 '''To ensure the above random seed settings work properly, this code should be run with the following
 command:
-PYTHONHASHSEED=0 python x-ray_classification_challenge_MAC.py
+PYTHONHASHSEED=0 python challenge-starter.py
 I recommend running from the IDLE environment.'''
 
 ###############################################################################
@@ -143,29 +143,36 @@ print(valid_batch_input.shape, valid_batch_labels.shape)
 ###############################################################################
 #                               Build and compile a Sequential() neural network model                                             #
 ###############################################################################
+''' NOTE:
+My original model is included below as an epilogue. After reading
+https://machinelearningmastery.com/rectified-linear-activation-function-for-deep-learning-neural-networks/,
+I realized that I shouldn't be using the softmax activation function between hidden layers of my neural
+network, and that the ReLU activation function is a better choice from an algorithmic and conceptual
+standpoint. I have updated my model accordingly.'''
+
 ''' Instantiate a Sequential() object:'''
 model = Sequential()
 ''' Add the input layer. Images are 256x256 in grayscale, meaning that there is only 1 colour channel.'''
 model.add(Input(shape=(256, 256, 1)))
 ''' Add a Conv2D() layer featuring 12 5x5 filters with a stride of 3 and the default padding (i.e., valid).
-I have chosen to use a softmax activation function for this layer.'''
-model.add(Conv2D(12, 5, strides=3, activation="softmax"))
+I have chosen to use the ReLU activation function for this layer.'''
+model.add(Conv2D(12, 5, strides=3, activation="relu"))
 ''' Add a MaxPooling2D() layer with a window size of 3x3 and a stride of 3, using the default padding
 (i.e., valid):'''
 model.add(MaxPooling2D(pool_size=(3, 3), strides=(3,3)))
 ''' Add a Conv2D layer featuring 10 4x4 filters with a stride of 2 and the default padding. I have once
-again chosen to use a softmax activation function for this layer.'''
-model.add(Conv2D(10, 4, strides=2, activation="softmax"))
+again chosen to use  the ReLU activation function for this layer.'''
+model.add(Conv2D(10, 4, strides=2, activation="relu"))
 ''' Add a MaxPooling2D() layer with a window size of 2x2 and a stride of 2, using the default padding:'''
 model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
 ''' Add a Conv2D() layer featuring 8 3x3 filters with a stride of 1 and the default padding. I will again use
-a softmax activation function for this layer.'''
-model.add(Conv2D(8, 3, strides=1, activation="softmax"))
+ the ReLU activation function for this layer.'''
+model.add(Conv2D(8, 3, strides=1, activation="relu"))
 ''' Add a MaxPooling2D() layer with a window size of 2x2 and a stride of 2, using the default padding:'''
 model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
-''' Add a Conv2D() layer featuring 6 2x2 filters with a stride of 1 and the default padding. Once again, a
-softmax activation function is used for this layer.'''
-model.add(Conv2D(6, 2, strides=1, activation="softmax"))
+''' Add a Conv2D() layer featuring 6 2x2 filters with a stride of 1 and the default padding. Once again,
+the ReLU activation function is used for this layer.'''
+model.add(Conv2D(6, 2, strides=1, activation="relu"))
 ''' Add a Flatten() layer to translate the input images into a single vector:'''
 model.add(Flatten())
 ''' Finally, add the output layer as a Dense() layer with 3 perceptrons and a softmax activation function:'''
@@ -290,26 +297,29 @@ print(confusion_matrix(true_classes,predicted_classes, labels = [0,1,2]))
 #                                                       Notes on model performance                                                                #
 ###############################################################################
 '''
-Even with initial random seeds set, I found that my results were incredibly variable based on which precise
+Even with initial random seeds set, I found that my results were rather variable based on which precise
 images in the training set were flipped horizontally, etc. I have noted validation accuracies (reported in
-the classification report) as high as 47% and as low as 30%. So at least some of the time, my model
+the classification report) as high as 36% and as low as 30%. So at least some of the time, my model
 outperforms random guessing. Sometimes it does not. When comparing my results to those
 distributed by Codecademy as their solution to the classification challenge, I see that Codecademy's
-"validation" accuracy is also variable, but not quite to the degree that mine is. I also note that
-Codecademy's code uses the training data as the validation data; that is to say, they call
+"validation" accuracy is also variable, to about the same the degree that mine is. That is to say,
+neither my model nor Codecademy's model regularly outperforms random.
+(In my first version of this project, I used a softmax activation function between hidden layers, and
+noticed more variability in the validation accuracies my models achieved. The current version of the
+project uses the relu activation function between hidden layers, and while the validation accuracies do
+vary from run to run their range is smaller than it was in the first version of the project.)
+
+I also note that Codecademy's code uses the training data as the validation data; that is to say, they call
 "Covid19-dataset/train" in the calls to .flow_from_directory() for both the training and the validation data.
 I do not know if this is intentional or if it was an oversight on the part of the developer who wrote it. It
 seems to me bad practice to use the full training set for both training and validation purposes.
 
-Neither my model nor Codecademy's model regularly outperforms random, although Codecademy's
-model is more likely to perform at least as well as random guessing compared to mine.
-
 I promise that I did not look at Codecademy's solution to the challenge until my own model-building code
 was complete. Indeed, the model they built is significantly different from mine: it has half the number of
-hidden layers that mine does, each of which uses a different activation function than the one that I used,
-and it implements Dropout() layers. Codecademy's call to ImageDataGenerator() also uses random image
-rotation to augment the data, whereas mine relies on horizontal flipping and shear intensity shifting.
-Both codes use height and width shifting as well as zoom intensity shifting to augment the data.
+hidden layers that mine does and it implements Dropout() layers (whereas my model does not).
+Codecademy's call to ImageDataGenerator() also uses random image rotation to augment the data,
+whereas mine relies on horizontal flipping and shear intensity shifting. Both codes use height and width
+shifting as well as zoom intensity shifting to augment the data.
 
 The variability in validation accuracy that I am seeing does not surprise me given the relatively
 small number of images in the training set (70 pneumonia images, 70 normal images, and
@@ -330,3 +340,25 @@ big image data sets, it's no wonder that they chose such a small image data set 
 that may not make for incredibly accurate results, it does make for a practical first project in
 image classification with deep learning.
 '''
+
+###############################################################################
+#                                                                      Epilogue                                                                                  #
+###############################################################################
+
+''' Included below is the first convolutional neural network I built to perform the image classification task
+detailed above. However, after reading
+https://machinelearningmastery.com/rectified-linear-activation-function-for-deep-learning-neural-networks/
+I realized that my choice of a softmax activation function between hidden layers probably wasn't the best,
+and definitely is not the industry standard. So I decided to try again with a ReLU activation function to see
+if I could achieve comparable, if not better, performance.'''
+#model = Sequential()
+#model.add(Input(shape=(256, 256, 1)))
+#model.add(Conv2D(12, 5, strides=3, activation="softmax"))
+#model.add(MaxPooling2D(pool_size=(3, 3), strides=(3,3)))
+#model.add(Conv2D(10, 4, strides=2, activation="softmax"))
+#model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
+#model.add(Conv2D(8, 3, strides=1, activation="softmax"))
+#model.add(MaxPooling2D(pool_size=(2,2), strides=(2,2)))
+#model.add(Conv2D(6, 2, strides=1, activation="softmax"))
+#model.add(Flatten())
+#model.add(Dense(3,activation="softmax"))
